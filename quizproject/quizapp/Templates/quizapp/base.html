@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz App{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'quizapp/css/styles.css' %}">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="{% url 'home' %}" class="nav-brand">Quiz Portal</a>
+            <div class="nav-links">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'quiz_list' %}">Practice Quizzes</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'my_attempts' %}">My Attempts</a>
+                {% if user.is_staff %}
+                <a href="{% url 'admin:index' %}">Admin</a>
+                {% endif %}
+                <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                    {% csrf_token %}
+                </form>
+                <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+                {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary"
+                    style="padding: 0.5rem 1rem; margin-left: 0.5rem;">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="main-container">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}{{ quiz.title }} - Result{% endblock %}
+{% block content %}
+<div class="result-header">
+    <h1>{{ quiz.title }}</h1>
+    <div class="score-display">{{ attempt.score }} / {{ attempt.total_score }}</div>
+    <p class="result-percentage">{{ percentage }}%</p>
+    {% if quiz_stats.total_attempts %}
+    <p class="result-stats">Average score: {{ quiz_stats.avg_score|floatformat:1|default:"—" }} · {{ quiz_stats.total_attempts }} total attempts</p>
+    {% endif %}
+    <div class="result-actions">
+        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-gold">Retake Quiz</a>
+        <a href="{% url 'leaderboard' quiz.id %}" class="btn btn-outline-light">Leaderboard</a>
+    </div>
+</div>
+<div class="page-header">
+    <h2>Review Answers</h2>
+</div>
+{% for item in questions_with_answers %}
+<div class="review-item {% if item.is_correct %}correct{% else %}incorrect{% endif %}">
+    <p class="review-question"><strong>{{ item.question.text }}</strong></p>
+    <p class="review-answer">
+        Your answer: {% if item.selected_choice %}{{ item.selected_choice.text }}{% else %}—{% endif %}
+        {% if item.is_correct %}<span class="review-correct">✓ Correct</span>{% else %}<span class="review-incorrect">✗ Correct: {{ item.correct_choice.text }}</span>{% endif %}
+    </p>
+</div>
+{% endfor %}
+{% endblock %}

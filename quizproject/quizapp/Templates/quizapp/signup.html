@@ -1,0 +1,28 @@
+{% extends "quizapp/base.html" %}
+
+{% block title %}Sign Up - Quiz App{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 2rem auto;">
+    <h2>Sign Up</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group" style="margin-bottom: 1rem;">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+            <small style="color: grey;">{{ field.help_text }}</small>
+            {% endif %}
+            {% for error in field.errors %}
+            <div style="color: red;">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+    </form>
+    <p style="text-align: center; margin-top: 1rem;">
+        Already have an account? <a href="{% url 'login' %}">Login</a>
+    </p>
+</div>
+{% endblock %}

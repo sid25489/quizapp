@@ -1,0 +1,41 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}{{ quiz.title }} - Quiz Portal{% endblock %}
+{% block content %}
+<div class="quiz-detail-card">
+    <h2>{{ quiz.title }}</h2>
+    <p>{{ quiz.description }}</p>
+    <div class="stats-bar" style="margin-top: 1.5rem;">
+        <div class="stat">
+            <div class="stat-value">{{ questions_count }}</div>
+            <div class="stat-label">Questions</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{{ total_score }}</div>
+            <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{{ quiz.time_limit }}</div>
+            <div class="stat-label">Minutes</div>
+        </div>
+    </div>
+    <div class="quiz-actions">
+        <a href="{% url 'start_quiz' quiz.id %}" class="btn btn-gold">Start Quiz</a>
+        <a href="{% url 'leaderboard' quiz.id %}" class="btn btn-secondary">View Leaderboard</a>
+        <a href="{% url 'generate_more' quiz.id %}" class="btn btn-secondary">Generate 5 New Questions</a>
+    </div>
+</div>
+{% if user_attempts %}
+<div class="page-header">
+    <h2>Your Recent Attempts</h2>
+</div>
+<div class="card">
+    <ul style="list-style: none;">
+        {% for attempt in user_attempts %}
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;">
+            <a href="{% url 'quiz_result' attempt.id %}">Score: {{ attempt.score }}/{{ attempt.total_score }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

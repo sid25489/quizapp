@@ -1,0 +1,26 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}Practice Quizzes - Quiz Portal{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Practice Quizzes</h1>
+    <p>Cricket · Football · Technology · Current Affairs · Geopolitics</p>
+</div>
+{% if quizzes %}
+<div class="quiz-grid">
+    {% for quiz in quizzes %}
+    {% include 'quizapp/includes/quiz_card.html' %}
+    {% endfor %}
+</div>
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="card">
+    <p>No quizzes available. Run <code>python manage.py load_practice_quizzes</code> to add practice quizzes.</p>
+</div>
+{% endif %}
+{% endblock %}

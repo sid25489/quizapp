@@ -1,0 +1,42 @@
+{% extends 'quizapp/base.html' %}
+{% load quiz_extras %}
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ quiz.title }}</h1>
+    <div class="timer-bar">
+        Time remaining: <span id="timer">{{ time_remaining }}</span> seconds
+    </div>
+</div>
+<form method="post" action="{% url 'submit_quiz' attempt.id %}" class="quiz-form">
+    {% csrf_token %}
+    {% for question in questions %}
+    <div class="question-block">
+        <div class="question-number">Question {{ forloop.counter }} of {{ questions|length }} · {{ question.points }} point{{ question.points|pluralize }}</div>
+        <div class="question-text">{{ question.text }}</div>
+        <div class="choices">
+            {% for choice in question.choices.all %}
+            <label>
+                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}"
+                    {% if existing_answers|get_item:question.id == choice.id %}checked{% endif %}>
+                <span>{{ choice.text }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-gold">Submit Quiz</button>
+</form>
+<script>
+    let remaining = {{ time_remaining }};
+    const timerEl = document.getElementById('timer');
+    const form = document.querySelector('form');
+    if (remaining > 0 && timerEl && form) {
+        setInterval(() => {
+            remaining--;
+            timerEl.textContent = remaining;
+            if (remaining <= 0) form.submit();
+        }, 1000);
+    }
+</script>
+{% endblock %}

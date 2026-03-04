@@ -1,0 +1,46 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}My Quiz Attempts - Quiz Portal{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>My Quiz Attempts</h1>
+</div>
+{% if stats.total_attempts or attempts %}
+{% if stats.total_attempts %}
+<div class="stats-bar">
+    <div class="stat">
+        <div class="stat-value">{{ stats.total_attempts }}</div>
+        <div class="stat-label">Total Attempts</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">{{ stats.avg_percentage }}%</div>
+        <div class="stat-label">Average Score</div>
+    </div>
+</div>
+{% endif %}
+{% if attempts %}
+<div class="attempt-list">
+{% for attempt in attempts %}
+<div class="card">
+    <a href="{% url 'quiz_result' attempt.id %}" class="card-link">{{ attempt.quiz.title }}</a>
+    <p class="quiz-meta">Score: {{ attempt.score }}/{{ attempt.total_score }}</p>
+</div>
+{% endfor %}
+</div>
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="card card-empty">
+    <p>No completed attempts yet. <a href="{% url 'quiz_list' %}" class="card-link">Browse quizzes</a> to get started.</p>
+</div>
+{% endif %}
+{% else %}
+<div class="card card-empty">
+    <p>No completed attempts yet. <a href="{% url 'quiz_list' %}" class="card-link">Browse quizzes</a> to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

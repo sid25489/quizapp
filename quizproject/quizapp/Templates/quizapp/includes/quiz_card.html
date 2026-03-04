@@ -1,0 +1,6 @@
+<div class="quiz-card">
+    <a href="{% url 'quiz_detail' quiz.id %}" class="card-link">{{ quiz.title }}</a>
+    <p class="quiz-meta">{{ quiz.description|truncatewords:20 }}</p>
+    <p class="quiz-meta">{{ quiz.get_questions_count }} questions · {{ quiz.time_limit }} min</p>
+    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary quiz-card-btn">Start Quiz</a>
+</div>

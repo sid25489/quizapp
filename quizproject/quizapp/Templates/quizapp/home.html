@@ -1,0 +1,34 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}Quiz Portal - Home{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>Quiz Portal</h1>
+    <p>Test your knowledge across Cricket, Football, Technology, Current Affairs & Geopolitics</p>
+</div>
+<div class="stats-bar">
+    <div class="stat">
+        <div class="stat-value">{{ total_quizzes }}</div>
+        <div class="stat-label">Practice Quizzes</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">{{ total_attempts }}</div>
+        <div class="stat-label">Total Attempts</div>
+    </div>
+</div>
+<div class="page-header">
+    <h1>Featured Practice Quizzes</h1>
+    <p>Select a quiz to begin testing your knowledge</p>
+</div>
+{% if quizzes %}
+<div class="quiz-grid">
+    {% for quiz in quizzes %}
+    {% include 'quizapp/includes/quiz_card.html' %}
+    {% endfor %}
+</div>
+<a href="{% url 'quiz_list' %}" class="btn btn-secondary">View All Quizzes</a>
+{% else %}
+<div class="card">
+    <p>No quizzes available yet. Run <code>python manage.py load_practice_quizzes</code> to add practice quizzes.</p>
+</div>
+{% endif %}
+{% endblock %}

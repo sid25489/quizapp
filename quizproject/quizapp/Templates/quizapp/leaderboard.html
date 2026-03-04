@@ -1,0 +1,23 @@
+{% extends 'quizapp/base.html' %}
+{% block title %}{{ quiz.title }} - Leaderboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ quiz.title }} - Leaderboard</h1>
+    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-secondary">← Back to Quiz</a>
+</div>
+{% if top_attempts %}
+<ol class="leaderboard-list">
+{% for attempt in top_attempts %}
+<li>
+    <span class="rank">{{ forloop.counter }}.</span>
+    <span>{{ attempt.user.username|default:"Anonymous" }}</span>
+    <span class="score">{{ attempt.score }}/{{ attempt.total_score }}</span>
+</li>
+{% endfor %}
+</ol>
+{% else %}
+<div class="card">
+    <p>No attempts yet. Be the first!</p>
+</div>
+{% endif %}
+{% endblock %}
