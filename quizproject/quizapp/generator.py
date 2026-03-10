@@ -1,7 +1,7 @@
 import json
 import os
 import random
-import google.generativeai as genai
+from google import genai
 
 FALLBACK_QUESTIONS = {
     "Cricket Mastery": [
@@ -92,18 +92,21 @@ FALLBACK_QUESTIONS = {
     ]
 }
 
-def generate_questions_for_topic(topic, count=5):
+def generate_questions_for_topic(topic, count=5, existing_questions=None):
     """
     Attempts to generate new questions via Gemini AI.
     If no API key is configured, falls back to the pre-loaded offline bank.
     """
+    
+    if existing_questions is None:
+        existing_questions = []
+
     # Using the directly provided API Key
     api_key = os.environ.get("AIzaSyA5lQj3CXT1VW2DToCD6rSNffLB88SemLg", "")
     
     if api_key:
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            client = genai.Client(api_key=api_key)
             prompt = f"""
             Generate exactly {count} multiple-choice trivia questions about "{topic}".
             Return ONLY a valid, raw JSON array (do not wrap it in markdown block like ```json).
@@ -113,7 +116,15 @@ def generate_questions_for_topic(topic, count=5):
             - "choices": array of exactly 4 string choices
             - "correct_choice_index": integer (0 to 3) representing the correct choice.
             """
-            response = model.generate_content(prompt)
+            if existing_questions:
+                prompt += "\n\nIMPORTANT: Do NOT generate any of the following questions or variations of them:\n"
+                for eq in existing_questions:
+                    prompt += f"- {eq}\n"
+
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=prompt
+            )
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text[7:-3].strip()
@@ -128,6 +139,9 @@ def generate_questions_for_topic(topic, count=5):
     # Use the fallback database if Gemini isn't available or fails
     bank = FALLBACK_QUESTIONS.get(topic, [])
     
+    if existing_questions:
+        bank = [q for q in bank if q['text'] not in existing_questions]
+        
     if not bank:
         # If the topic is missing from fallbacks entirely, simulate however many we need 
         return [

@@ -22,6 +22,8 @@
         <a href="{% url 'start_quiz' quiz.id %}" class="btn btn-gold">Start Quiz</a>
         <a href="{% url 'leaderboard' quiz.id %}" class="btn btn-secondary">View Leaderboard</a>
         <a href="{% url 'generate_more' quiz.id %}" class="btn btn-secondary">Generate 5 New Questions</a>
+        <a href="{% url 'remove_questions' quiz.id %}" class="btn btn-secondary"
+            style="background-color: #ef4444; color: white;">Remove 5 Questions</a>
     </div>
 </div>
 {% if user_attempts %}

@@ -18,9 +18,11 @@ def generate_more(request, quiz_id):
     """Generate more questions dynamically for a specific quiz."""
     quiz = get_object_or_404(Quiz, id=quiz_id, is_active=True)
     
-    # Generate 5 new questions related to the quiz title
-    generated_data = generate_questions_for_topic(quiz.title, count=5)
+    # Get list of existing questions to avoid duplicates
+    existing_questions = list(quiz.questions.values_list('text', flat=True))
     
+    # Generate 5 new questions related to the quiz title
+    generated_data = generate_questions_for_topic(quiz.title, count=5, existing_questions=existing_questions)
     if not generated_data:
         messages.error(request, "Failed to generate new questions. Please try again later.")
         return redirect('quiz_detail', quiz_id=quiz.id)
@@ -46,6 +48,26 @@ def generate_more(request, quiz_id):
         
     messages.success(request, f"Successfully created {created_count} more practice questions for {quiz.title}!")
     return redirect('quiz_detail', quiz_id=quiz.id)
+
+def remove_questions(request, quiz_id):
+    """Remove 5 questions from a specific quiz."""
+    quiz = get_object_or_404(Quiz, id=quiz_id, is_active=True)
+    
+    # Get the last 5 questions based on order
+    questions_to_delete = quiz.questions.order_by('-order')[:5]
+    
+    deleted_count = 0
+    for question in list(questions_to_delete):
+        question.delete()
+        deleted_count += 1
+        
+    if deleted_count > 0:
+        messages.success(request, f"Successfully removed {deleted_count} practice questions from {quiz.title}.")
+    else:
+        messages.info(request, "There are no questions to remove.")
+        
+    return redirect('quiz_detail', quiz_id=quiz.id)
+
 
 def signup(request):
     """Handle user registration."""
