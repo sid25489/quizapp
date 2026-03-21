@@ -23,7 +23,7 @@
         <a href="{% url 'leaderboard' quiz.id %}" class="btn btn-secondary">View Leaderboard</a>
         <a href="{% url 'generate_more' quiz.id %}" class="btn btn-secondary">Generate 5 New Questions</a>
         <a href="{% url 'remove_questions' quiz.id %}" class="btn btn-secondary"
-            style="background-color: #ef4444; color: white;">Remove 5 Questions</a>
+            style="background-color: var(--error); color: white; border: none;">Remove 5 Questions</a>
     </div>
 </div>
 {% if user_attempts %}
@@ -33,11 +33,44 @@
 <div class="card">
     <ul style="list-style: none;">
         {% for attempt in user_attempts %}
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;">
-            <a href="{% url 'quiz_result' attempt.id %}">Score: {{ attempt.score }}/{{ attempt.total_score }}</a>
+        <li style="padding: 1rem 0; border-bottom: 1px solid var(--card-border);">
+            <a href="{% url 'quiz_result' attempt.id %}" style="color: var(--text-main); text-decoration: none;">Score: {{ attempt.score }}/{{ attempt.total_score }}</a>
         </li>
         {% endfor %}
     </ul>
 </div>
 {% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const counters = document.querySelectorAll('.stat-value');
+    counters.forEach(counter => {
+        const text = counter.innerText;
+        const target = parseFloat(text.replace(/[^0-9.]/g, ''));
+        if (isNaN(target)) return;
+        
+        const isPercent = text.includes('%');
+        
+        const duration = 1500; // 1.5s
+        const startTime = performance.now();
+        
+        const updateCounter = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            
+            const current = target * easeOut;
+            counter.innerText = (isPercent ? current.toFixed(1) : Math.floor(current)) + (isPercent ? '%' : '');
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.innerText = text;
+            }
+        };
+        counter.innerText = '0' + (isPercent ? '%' : '');
+        requestAnimationFrame(updateCounter);
+    });
+});
+</script>
 {% endblock %}

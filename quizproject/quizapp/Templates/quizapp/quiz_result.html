@@ -25,4 +25,77 @@
     </p>
 </div>
 {% endfor %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Attempt score
+    const scoreStr = "{{ attempt.score }}";
+    const percentStr = "{{ percentage }}";
+    
+    const scoreVal = parseInt(scoreStr, 10);
+    const percentVal = parseFloat(percentStr);
+    
+    // The elements
+    const scoreEl = document.querySelector('.score-display');
+    const percentEl = document.querySelector('.result-percentage');
+    
+    if(!isNaN(scoreVal) && scoreEl) {
+        animateValue(scoreEl, 0, scoreVal, 1500, (val) => `${Math.floor(val)} / {{ attempt.total_score }}`);
+    }
+    
+    if(!isNaN(percentVal) && percentEl) {
+        animateValue(percentEl, 0, percentVal, 1500, (val) => `${val.toFixed(1)}%`);
+    }
+
+    function animateValue(obj, start, end, duration, formatter) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const current = start + easeOut * (end - start);
+            obj.innerHTML = formatter(current);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+    
+    // Confetti generator
+    if (percentVal >= 80) {
+        setTimeout(createConfetti, 500); // Wait for score to animate before popping confetti
+    }
+
+    function createConfetti() {
+        const colors = ['#5A32FA', '#00D4FF', '#32D74B', '#FF453A', '#FFFFFF'];
+        for (let i = 0; i < 80; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.top = '-10px';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.opacity = Math.random() + 0.5;
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            confetti.style.zIndex = '9999';
+            confetti.style.pointerEvents = 'none';
+            document.body.appendChild(confetti);
+
+            const duration = Math.random() * 3000 + 2000;
+            const fallKeyframes = [
+                { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate3d(${Math.random() * 100 - 50}px, 100vh, 0) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+            ];
+            const animation = confetti.animate(fallKeyframes, {
+                duration: duration,
+                easing: 'cubic-bezier(.37,0,.63,1)',
+                fill: 'forwards'
+            });
+            animation.onfinish = () => confetti.remove();
+        }
+    }
+});
+</script>
 {% endblock %}

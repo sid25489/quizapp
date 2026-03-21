@@ -4,8 +4,14 @@
 {% block content %}
 <div class="page-header">
     <h1>{{ quiz.title }}</h1>
-    <div class="timer-bar">
-        Time remaining: <span id="timer">{{ time_remaining }}</span> seconds
+    <div class="timer-container smooth-transition">
+        <div class="timer-ring">
+            <svg>
+                <circle cx="30" cy="30" r="26"></circle>
+                <circle cx="30" cy="30" r="26" class="progress" id="timerProgress"></circle>
+            </svg>
+            <div class="timer-value" id="timer">{{ time_remaining }}</div>
+        </div>
     </div>
 </div>
 <form method="post" action="{% url 'submit_quiz' attempt.id %}" class="quiz-form">
@@ -28,13 +34,36 @@
     <button type="submit" class="btn btn-primary btn-gold">Submit Quiz</button>
 </form>
 <script>
-    let remaining = {{ time_remaining }};
+    const maxTime = Number("{{ time_remaining }}") || 0;
+    let remaining = maxTime;
     const timerEl = document.getElementById('timer');
+    const timerProgress = document.getElementById('timerProgress');
     const form = document.querySelector('form');
+    
+    // Circumference of r=26 is ~163.36
+    const circumference = 2 * Math.PI * 26;
+    if (timerProgress) {
+        timerProgress.style.strokeDasharray = circumference;
+        timerProgress.style.strokeDashoffset = 0;
+    }
+
     if (remaining > 0 && timerEl && form) {
         setInterval(() => {
             remaining--;
             timerEl.textContent = remaining;
+            
+            if (timerProgress) {
+                const offset = circumference - (remaining / maxTime) * circumference;
+                timerProgress.style.strokeDashoffset = offset;
+                
+                // Color shift from primary to warning (orange) to error (red)
+                if (remaining <= maxTime * 0.25) {
+                    timerProgress.style.stroke = 'var(--error)';
+                } else if (remaining <= maxTime * 0.5) {
+                    timerProgress.style.stroke = '#FF9F0A'; // Apple Orange
+                }
+            }
+
             if (remaining <= 0) form.submit();
         }, 1000);
     }
