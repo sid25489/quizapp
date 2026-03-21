@@ -6,11 +6,12 @@ A fully-featured, rich-UI Quiz Web Application built with Python (Django) and a 
 
 ## ✨ Key Features
 
-### 🎨 Stunning Modern UI & Design
-*   **Glassmorphism Theme:** Featuring striking translucent glass cards, dark mode foundations, custom `box-shadow` glows, and backdrop filters for an extremely premium look.
-*   **Vibrant Deep Blue Gradients:** Text, badges, and hovering effects pop using vivid gradients shifting gracefully from deep blues to sky tones.
-*   **Animations:** Includes floating hero background SVG waves, smooth fade-in scrolling, shifting gradient link borders, and dynamic multi-state hover effects across the board.
-*   **Custom Typography:** Beautiful integration with Google's *Outfit* sans-serif font family.
+### 🎨 Premium Framer & Apple-Inspired UI
+*   **Intelligent Theme Engine:** Features a pristine Light Mode default alongside a stunning, true-black Dark Mode tailored with `prefers-color-scheme` media checks, `localStorage` persistence, and an animated, Apple-style navbar toggle pill that bypasses FOUC.
+*   **Liquid Glassmorphism & Depth:** Incorporates beautifully frosted glass cards utilizing `saturate` and `backdrop-filter` bounds alongside dynamic 3D CSS perspective tilts triggered via Javascript mouse coordinate tracking.
+*   **Ambient Global Animations:** Enjoy immersive `<svg>` noise overlays paired with fluid Electric Violet and Cyan blurred blobs that drift seamlessly via hardware-accelerated `@keyframes`.
+*   **Advanced Micro-Interactions:** Custom vanilla JS cursor that dynamically scales out on hover, smooth intersection observer stagger-fades on scrolling interfaces, and integrated Confetti API bursts upon achieving >80% accuracy!
+*   **Custom Typography:** Beautiful integration with Google's *Outfit* sans-serif font family, tightened letter tracking, and robust typography hierarchy.
 
 ### 🧠 Gemini AI Auto-Generation & Fallback Banks
 *   **Unlimited Infinite Quizzes:** A "Generate More Questions" button on quiz dashboards uses Google's `gemini-1.5-flash` language model to automatically write 5 fresh, topic-specific trivia questions right onto the end of your quiz on the spot!
@@ -28,7 +29,7 @@ A fully-featured, rich-UI Quiz Web Application built with Python (Django) and a 
 ### 🎮 Smooth Gameplay Experience
 *   **Interactive Testing Interface:** Answer choices highlight automatically on click.
 *   **Real-time Save:** Includes `save_answer` AJAX API hooks to preserve user choices securely directly to the database exactly at the moment they click—no more lost progress!
-*   **Sticky Time Manager:** A beautiful floating timer bar pinned to the top of your screen that dynamically counts down based on the specific quiz length.
+*   **Sticky Time Manager:** A gorgeous SVG circular progress ring that fluidly drains and shifts colors from Blue to Orange to Red as your time depletes using native `stroke-dashoffset` animations.
 *   **Detailed Results Page:** After submitting, you get a sprawling summary showcasing your total score, your percentage logic, and a full question-by-question breakdown showing exactly what you got right and wrong!
 
 ### 🏆 Leaderboards & Competition
