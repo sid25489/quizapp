@@ -1,0 +1,240 @@
+{% extends "quizapp/base.html" %}
+
+{% block title %}Upload Details - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.detail-header {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.detail-item {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    word-break: break-all;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.status-committed { background: #86efac; color: #15803d; }
+.status-failed { background: #fca5a5; color: #7f1d1d; }
+.status-processing { background: #fbbf24; color: #78350f; }
+
+.error-report {
+    background: #fecaca;
+    border-left: 4px solid #dc2626;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.error-report h3 {
+    margin: 0 0 1rem 0;
+    color: #7f1d1d;
+}
+
+.error-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    color: #7f1d1d;
+}
+
+.error-item {
+    padding: 0.5rem;
+    border-bottom: 1px solid #f5cacb;
+    font-size: 0.9rem;
+}
+
+.error-item:last-child {
+    border-bottom: none;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-color-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <h1>📋 Upload Details</h1>
+    
+    <div class="detail-header">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <h2>{{ session.original_filename }}</h2>
+            <span class="status-badge status-{{ session.status }}">{{ session.get_status_display }}</span>
+        </div>
+        
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Quiz</div>
+                <div class="detail-value">{{ session.quiz.title }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Format</div>
+                <div class="detail-value">{{ session.get_file_format_display|upper }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">File Size</div>
+                <div class="detail-value">{{ session.file_size_bytes|filesizeformat }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Uploaded By</div>
+                <div class="detail-value">{{ session.uploaded_by.username }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Uploaded At</div>
+                <div class="detail-value">{{ session.uploaded_at|date:"M d, Y H:i:s" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Processing Started</div>
+                <div class="detail-value">{{ session.processed_at|date:"M d, Y H:i:s"|default:"Pending" }}</div>
+            </div>
+        </div>
+        
+        <div class="detail-grid" style="margin-top: 2rem;">
+            <div class="detail-item">
+                <div class="detail-label">Total Rows</div>
+                <div class="detail-value">{{ session.total_rows }}</div>
+            </div>
+            <div class="detail-item" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;">
+                <div class="detail-label">✓ Valid Rows</div>
+                <div class="detail-value" style="color: #10b981;">{{ session.valid_rows }}</div>
+            </div>
+            <div class="detail-item" style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444;">
+                <div class="detail-label">✗ Invalid Rows</div>
+                <div class="detail-value" style="color: #ef4444;">{{ session.invalid_rows }}</div>
+            </div>
+            <div class="detail-item" style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b;">
+                <div class="detail-label">⚠ Duplicate Rows</div>
+                <div class="detail-value" style="color: #f59e0b;">{{ session.duplicate_rows }}</div>
+            </div>
+        </div>
+        
+        {% if session.success_rate_percent %}
+            <p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <strong>Success Rate:</strong> {{ session.success_rate_percent }}%
+            </p>
+        {% endif %}
+    </div>
+    
+    <!-- Error Report -->
+    {% if error_report %}
+        <div class="error-report">
+            <h3>❌ Processing Errors</h3>
+            <div class="error-list">
+                {% for error in error_report.errors %}
+                    <div class="error-item">
+                        <strong>Row {{ error.row_number|default:"?" }}:</strong> 
+                        {% if error.errors %}
+                            {{ error.errors|join:" | " }}
+                        {% else %}
+                            {{ error }}
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p>No error details available</p>
+                {% endfor %}
+            </div>
+            
+            {% if error_report.errors %}
+                <a href="{% url 'admin_download_errors' session.session_id %}" class="btn btn-primary" style="margin-top: 1rem;">
+                    📥 Download Error Report as CSV
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    <div class="action-buttons">
+        <a href="{% url 'admin_upload_history' %}" class="btn btn-secondary">← Back to History</a>
+        
+        {% if session.status == 'preview_review' %}
+            <a href="{% url 'admin_preview_upload' session.session_id %}" class="btn btn-primary">
+                → Continue with Upload
+            </a>
+        {% endif %}
+        
+        {% if session.status == 'committed' %}
+            <a href="{% url 'admin_quiz_detail' session.quiz.id %}" class="btn btn-primary">
+                → View Questions
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

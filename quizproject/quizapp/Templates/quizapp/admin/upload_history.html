@@ -1,0 +1,332 @@
+{% extends "quizapp/base.html" %}
+{% load static %}
+
+{% block title %}Upload History - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.history-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.filters-section {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-group select {
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.uploads-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.uploads-table thead {
+    background: var(--bg-tertiary);
+}
+
+.uploads-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.uploads-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.uploads-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.uploads-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-processing { background: #fbbf24; color: #78350f; }
+.status-validated { background: #93c5fd; color: #1e3a8a; }
+.status-committed { background: #86efac; color: #15803d; }
+.status-failed { background: #fca5a5; color: #7f1d1d; }
+.status-preview_review { background: #a78bfa; color: #3f0f5c; }
+
+.metrics {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.metrics-good { color: #10b981; }
+.metrics-warning { color: #f59e0b; }
+.metrics-error { color: #ef4444; }
+
+.actions-cell {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-view {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-view:hover {
+    background: var(--primary-color-hover);
+}
+
+.btn-download {
+    background: #10b981;
+    color: white;
+}
+
+.btn-download:hover {
+    background: #059669;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s;
+}
+
+.page-link:hover:not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.page-link.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .filters-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .uploads-table {
+        font-size: 0.9rem;
+    }
+    
+    .uploads-table th, .uploads-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .actions-cell {
+        flex-direction: column;
+    }
+    
+    .btn-sm {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <h1>📋 Upload History</h1>
+    <p class="text-secondary">View and manage all bulk uploads</p>
+    
+    <!-- Filters -->
+    <form method="get" class="filters-section">
+        <div class="filter-group">
+            <label for="status">Status</label>
+            <select name="status" id="status" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for choice_value, choice_label in status_choices %}
+                    <option value="{{ choice_value }}" {% if status == choice_value %}selected{% endif %}>
+                        {{ choice_label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="quiz">Quiz</label>
+            <select name="quiz" id="quiz" onchange="this.form.submit()">
+                <option value="">All Quizzes</option>
+                {% for q in quizzes %}
+                    <option value="{{ q.id }}">{{ q.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    
+    <!-- Uploads Table -->
+    {% if uploads %}
+        <div style="overflow-x: auto;">
+            <table class="uploads-table">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Quiz</th>
+                        <th>Status</th>
+                        <th>Metrics</th>
+                        <th>Uploaded</th>
+                        <th>By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for upload in uploads %}
+                        <tr>
+                            <td title="{{ upload.original_filename }}">{{ upload.original_filename|truncatewords:3 }}</td>
+                            <td>{{ upload.quiz.title|truncatewords:3 }}</td>
+                            <td>
+                                <span class="status-badge status-{{ upload.status }}">
+                                    {{ upload.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="metrics">
+                                    {% if upload.valid_rows %}
+                                        <span class="metrics-good">✓ {{ upload.valid_rows }} valid</span><br>
+                                    {% endif %}
+                                    {% if upload.invalid_rows %}
+                                        <span class="metrics-error">✗ {{ upload.invalid_rows }} errors</span><br>
+                                    {% endif %}
+                                    {% if upload.duplicate_rows %}
+                                        <span class="metrics-warning">⚠ {{ upload.duplicate_rows }} duplicates</span><br>
+                                    {% endif %}
+                                    <span>Total: {{ upload.total_rows }}</span>
+                                </div>
+                            </td>
+                            <td>{{ upload.uploaded_at|date:"M d, g:i a" }}</td>
+                            <td>{{ upload.uploaded_by.username }}</td>
+                            <td>
+                                <div class="actions-cell">
+                                    <a href="{% url 'admin_upload_detail' upload.session_id %}" class="btn-sm btn-view">
+                                        View
+                                    </a>
+                                    {% if upload.status == 'failed' and upload.error_report %}
+                                        <a href="{% url 'admin_download_errors' upload.session_id %}" class="btn-sm btn-download">
+                                            Download Errors
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="page-link">« First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ Previous</a>
+                {% else %}
+                    <span class="page-link disabled">« First</span>
+                    <span class="page-link disabled">‹ Previous</span>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Last »</a>
+                {% else %}
+                    <span class="page-link disabled">Next ›</span>
+                    <span class="page-link disabled">Last »</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No uploads found</p>
+            <a href="{% url 'admin_bulk_upload' %}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; display: inline-block; margin-top: 1rem;">
+                Upload Questions
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

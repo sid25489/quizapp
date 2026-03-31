@@ -1,0 +1,269 @@
+{% extends "quizapp/base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Quiz Management{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-dashboard {
+    padding: 2rem 0;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary-admin {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-primary-admin:hover {
+    background: var(--primary-color-hover);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.upload-list, .quiz-list, .audit-list {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.list-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.item-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.item-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-processing {
+    background: #fbbf24;
+    color: #78350f;
+}
+
+.status-validated {
+    background: #93c5fd;
+    color: #1e3a8a;
+}
+
+.status-committed {
+    background: #86efac;
+    color: #15803d;
+}
+
+.status-failed {
+    background: #fca5a5;
+    color: #7f1d1d;
+}
+
+.status-preview {
+    background: #a78bfa;
+    color: #3f0f5c;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-primary-admin {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .list-item {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-dashboard">
+    <h1>📊 Admin Dashboard</h1>
+    <p class="text-secondary">Manage quizzes, uploads, and monitor activity</p>
+    
+    <!-- Stats Section -->
+    <div class="grid-2">
+        <div class="stat-card">
+            <div class="stat-label">Total Quizzes</div>
+            <div class="stat-number">{{ stats.total_quizzes|default:"0" }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Questions</div>
+            <div class="stat-number">{{ stats.total_questions|default:"0" }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Successful Uploads</div>
+            <div class="stat-number">{{ stats.total_uploads|default:"0" }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Pending Review</div>
+            <div class="stat-number" style="color: #f59e0b;">{{ stats.pending_uploads|default:"0" }}</div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="action-buttons">
+        <a href="{% url 'admin_create_quiz' %}" class="btn-primary-admin">+ Create New Quiz</a>
+        <a href="{% url 'admin_bulk_upload' %}" class="btn-primary-admin">📤 Bulk Upload Questions</a>
+        <a href="{% url 'admin_upload_history' %}" class="btn-primary-admin">📋 Upload History</a>
+        <a href="{% url 'admin_audit_log' %}" class="btn-primary-admin">🔍 Audit Log</a>
+    </div>
+    
+    <!-- Recent Quizzes -->
+    <div>
+        <h2 class="section-title">Quizzes</h2>
+        {% if quizzes %}
+            <div class="quiz-list">
+                {% for quiz in quizzes %}
+                    <div class="list-item">
+                        <div>
+                            <div class="item-title">{{ quiz.title }}</div>
+                            <div class="item-meta">
+                                {{ quiz.question_count }} questions • {{ quiz.attempt_count }} attempts
+                            </div>
+                        </div>
+                        <a href="{% url 'admin_quiz_detail' quiz.id %}" class="btn-secondary">View</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary">No quizzes yet. <a href="{% url 'admin_create_quiz' %}">Create one</a></p>
+        {% endif %}
+    </div>
+    
+    <!-- Recent Uploads -->
+    <div>
+        <h2 class="section-title">Recent Uploads</h2>
+        {% if recent_uploads %}
+            <div class="upload-list">
+                {% for upload in recent_uploads %}
+                    <div class="list-item">
+                        <div>
+                            <div class="item-title">
+                                {{ upload.original_filename }}
+                                <span class="status-badge status-{{ upload.status }}">{{ upload.get_status_display }}</span>
+                            </div>
+                            <div class="item-meta">
+                                Quiz: {{ upload.quiz.title }} • {{ upload.valid_rows }}/{{ upload.total_rows }} valid
+                                • By {{ upload.uploaded_by.username }} • {{ upload.uploaded_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        <a href="{% url 'admin_upload_detail' upload.session_id %}" class="btn-secondary">Details</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary">No uploads yet.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Recent Audit Log -->
+    <div>
+        <h2 class="section-title">Recent Activity</h2>
+        {% if recent_audit %}
+            <div class="audit-list">
+                {% for log in recent_audit %}
+                    <div class="list-item">
+                        <div>
+                            <div class="item-title">{{ log.get_action_display }}</div>
+                            <div class="item-meta">
+                                By {{ log.admin_user.username }}
+                                {% if log.quiz %} • Quiz: {{ log.quiz.title }}{% endif %}
+                                • {{ log.timestamp|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary">No activity yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends "quizapp/base.html" %}
+{% load static %}
+
+{% block title %}Bulk Upload Questions - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.upload-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.file-upload-area {
+    border: 2px dashed var(--primary-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s;
+    background: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.file-upload-area:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.file-upload-area input[type="file"] {
+    display: none;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.file-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.submit-btn:hover {
+    background: var(--primary-color-hover);
+}
+
+.submit-btn:disabled {
+    background: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.format-guide {
+    background: var(--bg-tertiary);
+    border-left: 4px solid var(--primary-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.format-guide h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.format-guide h3:first-child {
+    margin-top: 0;
+}
+
+.format-guide code {
+    background: var(--bg-secondary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.85rem;
+}
+
+.format-example {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    font-family: monospace;
+}
+
+.error-message {
+    background: #fecaca;
+    color: #7f1d1d;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #dc2626;
+}
+
+.file-selected {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .file-upload-area {
+        padding: 1.5rem 1rem;
+    }
+    
+    .upload-icon {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="upload-container">
+        <h1>📤 Bulk Upload Questions</h1>
+        <p class="text-secondary">Add multiple questions to a quiz at once</p>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-message" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            
+            <!-- Quiz Selection -->
+            <div class="form-group">
+                <label for="{{ form.quiz.id_for_label }}">Select Quiz</label>
+                {{ form.quiz }}
+                {% if form.quiz.help_text %}
+                    <p class="help-text">{{ form.quiz.help_text }}</p>
+                {% endif %}
+                {% if form.quiz.errors %}
+                    <p class="error-message">{{ form.quiz.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- File Format Selection -->
+            <div class="form-group">
+                <label for="{{ form.file_format.id_for_label }}">File Format (Auto-detect)</label>
+                {{ form.file_format }}
+                {% if form.file_format.help_text %}
+                    <p class="help-text">{{ form.file_format.help_text }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- File Upload -->
+            <div class="form-group">
+                <label for="{{ form.file.id_for_label }}">Upload File</label>
+                <div class="file-upload-area" onclick="document.getElementById('{{ form.file.id_for_label }}').click();">
+                    <div class="upload-icon">📁</div>
+                    <p><strong>Click to browse or drag and drop</strong></p>
+                    <p class="file-info">CSV, JSON, or Excel (.xlsx) • Max 10MB</p>
+                    {{ form.file }}
+                </div>
+                <p class="file-info" id="file-name-display" style="margin-top: 1rem;"></p>
+                {% if form.file.help_text %}
+                    <p class="help-text">{{ form.file.help_text }}</p>
+                {% endif %}
+                {% if form.file.errors %}
+                    <p class="error-message">{{ form.file.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="submit-btn">
+                Start Upload & Validation
+            </button>
+        </form>
+        
+        <!-- Format Guide -->
+        <div class="format-guide">
+            <h3>📋 CSV Format</h3>
+            <p>Required columns: <code>question</code>, <code>options</code>, <code>correct_answer</code>, <code>points</code></p>
+            <div class="format-example">
+question,options,correct_answer,points
+What is 2+2?,3|4|5,4,1
+What is the capital of France?,London|Paris|Berlin,Paris,2
+            </div>
+            
+            <h3>📄 JSON Format</h3>
+            <p>Object with <code>questions</code> array:</p>
+            <div class="format-example">
+{
+  "questions": [
+    {
+      "question": "What is 2+2?",
+      "options": ["3", "4", "5"],
+      "correct_answer": "4",
+      "points": 1
+    }
+  ]
+}
+            </div>
+            
+            <h3>📊 Excel Format</h3>
+            <p>Headers in first row, same columns as CSV format</p>
+            
+            <h3>✨ Optional Fields</h3>
+            <p>
+                <code>difficulty</code> (easy/medium/hard) •
+                <code>explanation</code> (text) •
+                <code>tags</code> (comma-separated) •
+                <code>time_limit</code> (seconds)
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// File upload drag and drop
+const fileUploadArea = document.querySelector('.file-upload-area');
+const fileInput = document.getElementById('{{ form.file.id_for_label }}');
+const fileNameDisplay = document.getElementById('file-name-display');
+
+// Prevent default drag behaviors
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    fileUploadArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Highlight drop area when item is dragged over it
+['dragenter', 'dragover'].forEach(eventName => {
+    fileUploadArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    fileUploadArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    fileUploadArea.style.borderColor = 'var(--primary-color-hover)';
+    fileUploadArea.style.background = 'rgba(var(--primary-color-rgb), 0.15)';
+}
+
+function unhighlight(e) {
+    fileUploadArea.style.borderColor = 'var(--primary-color)';
+    fileUploadArea.style.background = 'rgba(var(--primary-color-rgb), 0.05)';
+}
+
+// Handle dropped files
+fileUploadArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    updateFileName();
+}
+
+// Handle file selection
+fileInput.addEventListener('change', updateFileName);
+
+function updateFileName() {
+    if (fileInput.files.length > 0) {
+        const fileName = fileInput.files[0].name;
+        const fileSize = (fileInput.files[0].size / 1024 / 1024).toFixed(2);
+        fileNameDisplay.innerHTML = `<span class="file-selected">✓ ${fileName}</span> (${fileSize} MB)`;
+    }
+}
+</script>
+{% endblock %}

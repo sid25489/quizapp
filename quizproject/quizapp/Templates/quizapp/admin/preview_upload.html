@@ -1,0 +1,383 @@
+{% extends "quizapp/base.html" %}
+{% load static %}
+
+{% block title %}Review Upload Preview - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.preview-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.preview-header {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+.stat.success .stat-value { color: #10b981; }
+.stat.warning .stat-value { color: #f59e0b; }
+.stat.error .stat-value { color: #ef4444; }
+
+.preview-section {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.sample-questions {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.question-item {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.question-item:last-child {
+    margin-bottom: 0;
+}
+
+.question-text {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.question-options {
+    list-style: none;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.question-options li {
+    padding: 0.25rem 0;
+}
+
+.correct-option {
+    color: #10b981;
+    font-weight: 500;
+}
+
+.question-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.error-section {
+    background: #fecaca;
+    border-left: 4px solid #dc2626;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.error-list {
+    list-style: disc;
+    list-style-position: inside;
+    color: #7f1d1d;
+}
+
+.error-list li {
+    margin-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-color-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-secondary);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.warning-box {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.warning-box strong {
+    color: #92400e;
+}
+
+@media (max-width: 768px) {
+    .preview-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="preview-container">
+    <h1>🔍 Review Upload Preview</h1>
+    <p class="text-secondary">Verify the data before committing to the database</p>
+    
+    <!-- Upload Summary -->
+    <div class="preview-header">
+        <h2>Upload Summary</h2>
+        
+        <div class="preview-stats">
+            <div class="stat success">
+                <div class="stat-value">{{ validation_data.valid_rows }}</div>
+                <div class="stat-label">Valid Rows</div>
+            </div>
+            <div class="stat {% if validation_data.invalid_rows > 0 %}error{% else %}success{% endif %}">
+                <div class="stat-value">{{ validation_data.invalid_rows }}</div>
+                <div class="stat-label">Invalid Rows</div>
+            </div>
+            <div class="stat {% if validation_data.duplicate_rows > 0 %}warning{% else %}success{% endif %}">
+                <div class="stat-value">{{ validation_data.duplicate_rows }}</div>
+                <div class="stat-label">Duplicate Rows</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ validation_data.total_rows }}</div>
+                <div class="stat-label">Total Rows</div>
+            </div>
+        </div>
+        
+        <p><strong>File:</strong> {{ session.original_filename }} ({{ session.file_size_bytes|filesizeformat }})</p>
+        <p><strong>Quiz:</strong> {{ session.quiz.title }}</p>
+        <p><strong>Uploaded by:</strong> {{ session.uploaded_by.username }}</p>
+        <p><strong>Upload time:</strong> {{ session.uploaded_at|date:"M d, Y H:i:s" }}</p>
+    </div>
+    
+    <!-- Warning if there are errors -->
+    {% if validation_data.invalid_rows > 0 %}
+        <div class="warning-box">
+            <strong>⚠️ Warning:</strong> There are {{ validation_data.invalid_rows }} rows with errors.
+            These will be skipped during commit. 
+            {% if session.error_report %}
+                <a href="{% url 'admin_download_errors' session.session_id %}">Download error report</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    {% if validation_data.duplicate_rows > 0 %}
+        <div class="warning-box" style="background: #dbeafe; border-left-color: #0284c7;">
+            <strong>ℹ️ Note:</strong> {{ validation_data.duplicate_rows }} questions already exist in this quiz and will be skipped.
+        </div>
+    {% endif %}
+    
+    <!-- Sample Questions -->
+    {% if validation_data.valid_rows > 0 %}
+        <div class="preview-section">
+            <h2 class="section-title">Sample Questions (First 5)</h2>
+            <div class="sample-questions">
+                <!-- Sample data would be displayed here -->
+                <p class="text-secondary">Questions have been validated and are ready for commit.</p>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Confirmation Form -->
+    <div class="preview-section">
+        <h2 class="section-title">✅ Confirm & Commit</h2>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error-section">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if validation_data.valid_rows > 0 %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        {{ form.confirm }}
+                        <label for="{{ form.confirm.id_for_label }}">
+                            I have reviewed the preview and confirm to add {{ validation_data.valid_rows }} questions
+                            to "{{ session.quiz.title }}"
+                        </label>
+                    </div>
+                    {% if form.confirm.errors %}
+                        <p class="error-message">{{ form.confirm.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.notes.id_for_label }}">Upload Notes (Optional)</label>
+                    {{ form.notes }}
+                    <p class="help-text">Add any notes about this upload for the audit trail</p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        ✓ Commit to Database
+                    </button>
+                    <a href="{% url 'admin_bulk_upload' %}" class="btn btn-secondary btn-lg">
+                        ← Start Over
+                    </a>
+                </div>
+            </form>
+        {% else %}
+            <div class="warning-box" style="background: #fecaca; border-left-color: #dc2626;">
+                <strong>❌ Cannot commit:</strong> No valid rows to commit. Please fix the errors and try again.
+            </div>
+            <a href="{% url 'admin_bulk_upload' %}" class="btn btn-secondary">← Go Back</a>
+        {% endif %}
+    </div>
+    
+    <!-- Success Criteria -->
+    <div class="preview-section">
+        <h2 class="section-title">✨ Next Steps</h2>
+        <ol style="line-height: 1.8; color: var(--text-secondary);">
+            <li>
+                <strong style="color: var(--text-primary);">Review the preview above</strong> - Check that all {{ validation_data.valid_rows }} questions are correct
+            </li>
+            <li>
+                {% if validation_data.invalid_rows > 0 %}
+                    <strong style="color: var(--text-primary);">Note the errors</strong> - {{ validation_data.invalid_rows }} rows have errors and will be skipped
+                {% else %}
+                    <strong style="color: var(--text-primary);">All data is valid</strong> - ✓ No errors detected
+                {% endif %}
+            </li>
+            <li>
+                <strong style="color: var(--text-primary);">Check the confirmation box</strong> - Confirm you want to proceed
+            </li>
+            <li>
+                <strong style="color: var(--text-primary);">Click "Commit to Database"</strong> - Questions will be added immediately with full audit logging
+            </li>
+            <li>
+                <strong style="color: var(--text-primary);">Review success page</strong> - See confirmation and next steps
+            </li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "quizapp/base.html" %}
+
+{% block title %}Audit Log - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.audit-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.filters-section {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-group select {
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.audit-table thead {
+    background: var(--bg-tertiary);
+}
+
+.audit-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.audit-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.audit-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.audit-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.action-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.timestamp {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.details-preview {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.page-link:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.page-link.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 968px) {
+    .filters-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .audit-table {
+        font-size: 0.9rem;
+    }
+    
+    .audit-table th, .audit-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .details-preview {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 600px) {
+    .filters-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .audit-table {
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="audit-container">
+    <h1>🔍 Audit Log</h1>
+    <p class="text-secondary">Complete audit trail of all admin actions</p>
+    
+    <!-- Filters -->
+    <form method="get" class="filters-section">
+        <div class="filter-group">
+            <label for="action">Action</label>
+            <select name="action" id="action" onchange="this.form.submit()">
+                <option value="">All Actions</option>
+                {% for choice_value, choice_label in action_choices %}
+                    <option value="{{ choice_value }}" {% if action == choice_value %}selected{% endif %}>
+                        {{ choice_label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    
+    <!-- Audit Log Table -->
+    {% if logs %}
+        <div style="overflow-x: auto;">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                        <th>Admin User</th>
+                        <th>Quiz</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td class="timestamp">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                            <td>
+                                <span class="action-badge">{{ log.get_action_display }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ log.admin_user.username }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                    {{ log.admin_user.email|default:"No email" }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if log.quiz %}
+                                    {{ log.quiz.title|truncatewords:3 }}
+                                {% else %}
+                                    <span style="color: var(--text-secondary);">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="details-preview" title="{{ log.details }}">
+                                {% if log.details %}
+                                    {{ log.details|stringformat:"s" }}
+                                {% else %}
+                                    <span style="color: var(--text-secondary);">No details</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="page-link">« First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ Previous</a>
+                {% else %}
+                    <span class="page-link disabled">« First</span>
+                    <span class="page-link disabled">‹ Previous</span>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next ›</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Last »</a>
+                {% else %}
+                    <span class="page-link disabled">Next ›</span>
+                    <span class="page-link disabled">Last »</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <p>No audit logs found</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

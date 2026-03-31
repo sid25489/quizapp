@@ -1,0 +1,272 @@
+{% extends "quizapp/base.html" %}
+{% load static %}
+
+{% block title %}Upload Successful - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.success-container {
+    max-width: 700px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: bounce 0.6s ease-in-out;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.success-title {
+    font-size: 2rem;
+    color: #10b981;
+    margin-bottom: 0.5rem;
+}
+
+.success-message {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.details-box {
+    background: var(--bg-tertiary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(16, 185, 129, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid #10b981;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #10b981;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-color-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.next-steps {
+    text-align: left;
+    background: var(--bg-tertiary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.next-steps h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.next-steps ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.next-steps li {
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.next-steps strong {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .success-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .success-title {
+        font-size: 1.5rem;
+    }
+    
+    .success-icon {
+        font-size: 3rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-icon">✨</div>
+    
+    <h1 class="success-title">Upload Successful!</h1>
+    
+    <p class="success-message">
+        Your questions have been successfully added to the database.<br>
+        The questions are now available for students to take.
+    </p>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ session.valid_rows }}</div>
+            <div class="stat-label">Questions Added</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ session.invalid_rows }}</div>
+            <div class="stat-label">Skipped (Errors)</div>
+        </div>
+    </div>
+    
+    <!-- Details -->
+    <div class="details-box">
+        <div class="detail-item">
+            <span class="detail-label">Quiz</span>
+            <span class="detail-value">{{ quiz.title }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">File</span>
+            <span class="detail-value">{{ session.original_filename }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Upload ID</span>
+            <span class="detail-value" style="font-family: monospace; font-size: 0.9rem;">{{ session.session_id }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Time</span>
+            <span class="detail-value">{{ session.committed_at|date:"M d, Y H:i:s" }}</span>
+        </div>
+    </div>
+    
+    <!-- Next Steps -->
+    <div class="next-steps">
+        <h3>📋 What's Next?</h3>
+        <ol>
+            <li>
+                <strong>Questions are live</strong> - New questions are immediately available in the quiz
+            </li>
+            <li>
+                <strong>Review in admin</strong> - <a href="{% url 'admin_quiz_detail' quiz.id %}">View all questions</a> to verify they look correct
+            </li>
+            <li>
+                <strong>Test the quiz</strong> - Take the quiz yourself to ensure everything works properly
+            </li>
+            <li>
+                <strong>Check audit log</strong> - <a href="{% url 'admin_audit_log' %}">View audit log</a> to see this upload recorded
+            </li>
+            <li>
+                <strong>Upload more</strong> - Ready to add more questions? <a href="{% url 'admin_bulk_upload' %}">Upload again</a>
+            </li>
+        </ol>
+    </div>
+    
+    <!-- Actions -->
+    <div class="action-buttons">
+        <a href="{% url 'admin_quiz_detail' quiz.id %}" class="btn btn-primary">
+            → View Questions
+        </a>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+            ← Back to Dashboard
+        </a>
+        <a href="{% url 'admin_bulk_upload' %}" class="btn btn-secondary">
+            + Upload More
+        </a>
+    </div>
+</div>
+{% endblock %}

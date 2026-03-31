@@ -1,0 +1,339 @@
+{% extends "quizapp/base.html" %}
+
+{% block title %}{{ quiz.title }} - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.quiz-detail {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.quiz-header {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.header-info h2 {
+    margin: 0 0 0.5rem 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-color-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+}
+
+.quiz-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.info-item {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.info-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.questions-section {
+    margin-top: 2rem;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+}
+
+.questions-list {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.question-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+}
+
+.question-item:last-child {
+    border-bottom: none;
+}
+
+.question-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.question-content {
+    flex: 1;
+}
+
+.question-text {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.question-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.question-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.options-list {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.options-list li {
+    padding: 0.25rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.options-list li:before {
+    content: "○";
+    position: absolute;
+    left: 0;
+}
+
+.options-list li.correct:before {
+    content: "✓";
+    color: #10b981;
+    font-weight: bold;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.page-link:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.page-link.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+    }
+    
+    .quiz-info {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .question-item {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-detail">
+    <div class="quiz-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1>{{ quiz.title }}</h1>
+                {% if quiz.description %}
+                    <p class="text-secondary">{{ quiz.description }}</p>
+                {% endif %}
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'admin_bulk_upload' %}" class="btn btn-primary">
+                    + Add Questions
+                </a>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                    ← Back
+                </a>
+            </div>
+        </div>
+        
+        <div class="quiz-info">
+            <div class="info-item">
+                <div class="info-label">Total Questions</div>
+                <div class="info-value">{{ total_questions }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value" style="font-size: 1rem;">
+                    {% if quiz.is_active %}
+                        <span style="color: #10b981;">✓ Active</span>
+                    {% else %}
+                        <span style="color: #f59e0b;">Draft</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if quiz.time_limit %}
+                <div class="info-item">
+                    <div class="info-label">Time Limit</div>
+                    <div class="info-value">{{ quiz.time_limit }}m</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Questions List -->
+    {% if questions %}
+        <div class="questions-section">
+            <h2 class="section-title">Questions ({{ questions|length }})</h2>
+            <div class="questions-list">
+                {% for question in questions %}
+                    <div class="question-item">
+                        <div class="question-content">
+                            <div class="question-text">
+                                {{ question.order }}. {{ question.text }}
+                            </div>
+                            <ul class="options-list">
+                                {% for choice in question.choice_set.all %}
+                                    <li {% if choice.is_correct %}class="correct"{% endif %}>
+                                        {{ choice.text }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="question-meta">
+                                <span>💰 {{ question.points }} points</span>
+                                <span>🔢 {{ question.choice_set.count }} options</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="page-link">« First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">‹ Prev</a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="page-link active">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Next ›</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">Last »</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="questions-section">
+            <div class="empty-state">
+                <p>No questions yet</p>
+                <a href="{% url 'admin_bulk_upload' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                    + Add Questions
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
