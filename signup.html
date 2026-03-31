@@ -1,12 +1,12 @@
-{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Quiz App{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'quizapp/css/styles.css' %}?v={% now 'U' %}">
+    <title>Sign Up - Quiz App</title>
+    <link rel="stylesheet" href="/static/quizapp/css/styles.css?v=1774934068">
 </head>
 
 <body>
@@ -22,24 +22,15 @@
     <div class="noise-overlay"></div>
     <nav class="navbar">
         <div class="navbar-inner">
-            <a href="{% url 'home' %}" class="nav-brand">Quiz Portal</a>
+            <a href="/" class="nav-brand">Quiz Portal</a>
             <div class="nav-links">
-                <a href="{% url 'home' %}">Home</a>
-                <a href="{% url 'quiz_list' %}">Practice Quizzes</a>
-                {% if user.is_authenticated %}
-                <a href="{% url 'my_attempts' %}">My Attempts</a>
-                {% if user.is_staff %}
-                <a href="{% url 'admin:index' %}">Admin</a>
-                {% endif %}
-                <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
-                    {% csrf_token %}
-                </form>
-                <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
-                {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'signup' %}" class="btn btn-primary"
+                <a href="/">Home</a>
+                <a href="/quizzes/">Practice Quizzes</a>
+                
+                <a href="/login/">Login</a>
+                <a href="/signup/" class="btn btn-primary"
                     style="padding: 0.5rem 1rem; margin-left: 0.5rem;">Sign Up</a>
-                {% endif %}
+                
                 <div class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
                     <div class="knob">
                         <svg class="theme-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -59,14 +50,47 @@
         </div>
     </nav>
     <div class="main-container">
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-        {% block content %}{% endblock %}
+        
+        
+<div class="auth-card anim-fade-up">
+    <h2>Sign Up</h2>
+    <form method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="Ht4aNZaB86cul7CYmuuuvNGEt9qC3yQNvz3rIbYBvChwNqrWR4d2hcdrLkyA5h6Z">
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="id_username">Username:</label>
+            <input type="text" name="username" maxlength="150" autocapitalize="none" autocomplete="username" autofocus required aria-describedby="id_username_helptext" id="id_username">
+            
+            <small style="color: grey;">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+            
+            
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="id_password1">Password:</label>
+            <input type="password" name="password1" autocomplete="new-password" required aria-describedby="id_password1_helptext" id="id_password1">
+            
+            <small style="color: grey;"><ul><li>Your password can’t be too similar to your other personal information.</li><li>Your password must contain at least 8 characters.</li><li>Your password can’t be a commonly used password.</li><li>Your password can’t be entirely numeric.</li></ul></small>
+            
+            
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="id_password2">Password confirmation:</label>
+            <input type="password" name="password2" autocomplete="new-password" required aria-describedby="id_password2_helptext" id="id_password2">
+            
+            <small style="color: grey;">Enter the same password as before, for verification.</small>
+            
+            
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+    </form>
+    <p style="text-align: center; margin-top: 1rem;">
+        Already have an account? <a href="/login/">Login</a>
+    </p>
+</div>
+
     </div>
     <!-- Global Advanced Animations -->
     <script>
@@ -119,7 +143,7 @@
         }, { threshold: 0.1 });
 
         // Apply fade-up to structural blocks
-        document.querySelectorAll('.card, .quiz-card, .stat, .question-block, .auth-card').forEach((el, index) => {
+        document.querySelectorAll('.card, .quiz-card, .stat, .question-block').forEach((el, index) => {
             el.classList.add('anim-fade-up');
             el.style.transitionDelay = `${(index % 5) * 100}ms`;
             observer.observe(el);
