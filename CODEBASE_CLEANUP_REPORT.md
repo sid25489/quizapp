@@ -425,7 +425,7 @@ cd /path/to/quizproject
 rm error.html         # Django error page
 rm out.txt            # Debug output
 rm test.py            # Network test script
-rm ../cd              # Empty orphan file
+rm ../quizapp/cd      # Empty orphan file (from parent quizapp dir)
 
 # Delete git log dump
 rm quizproject/log.txt

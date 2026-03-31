@@ -56,7 +56,7 @@ ROOT_URLCONF = 'quizproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'quizapp' / 'Templates'],
+        'DIRS': [BASE_DIR / 'quizapp' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
