@@ -31,6 +31,12 @@
                 {% if user.is_staff %}
                 <a href="{% url 'admin:index' %}">Admin</a>
                 {% endif %}
+                {% if user.is_superuser %}
+                <a href="{% url 'quiz_dashboard' %}" class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; margin-left: 0.5rem; white-space: nowrap;">Dashboard</a>
+                <a href="{% url 'upload_questions' %}" class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; white-space: nowrap;">Upload</a>
+                <a href="{% url 'add_question' %}" class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; white-space: nowrap;">Add</a>
+                <a href="{% url 'validation_results' %}" class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem; white-space: nowrap;">Results</a>
+                {% endif %}
                 <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
                     {% csrf_token %}
                 </form>
