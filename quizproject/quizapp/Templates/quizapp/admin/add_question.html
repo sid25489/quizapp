@@ -1,0 +1,119 @@
+{% extends 'quizapp/base.html' %}
+
+{% block title %}Manual Question Entry - AI Validated{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto; padding: 2.5rem;">
+    <h2 style="margin-bottom: 1.5rem;">Add Question Manually</h2>
+    
+    <form method="post" id="question-form">
+        {% csrf_token %}
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Target Quiz</label>
+            <select name="quiz_id" id="quiz_id" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+                {% for quiz in quizzes %}
+                <option value="{{ quiz.id }}">{{ quiz.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Question Text</label>
+            <textarea name="question_text" id="question_text" rows="3" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem;">Option 1</label>
+                <input type="text" name="option1" id="option1" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+            </div>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem;">Option 2</label>
+                <input type="text" name="option2" id="option2" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+            </div>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem;">Option 3</label>
+                <input type="text" name="option3" id="option3" style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+            </div>
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 0.5rem;">Option 4</label>
+                <input type="text" name="option4" id="option4" style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Correct Option (Exact text)</label>
+            <input type="text" name="correct_option" id="correct_option" required style="width: 100%; padding: 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text);">
+        </div>
+
+        <div id="ai-feedback" style="display: none; padding: 1rem; background: rgba(var(--accent-rgb), 0.1); border-left: 4px solid var(--accent); margin-bottom: 1.5rem; border-radius: var(--radius);">
+            <h4 style="color: var(--accent); margin-bottom: 0.5rem;">AI Suggestions</h4>
+            <p id="ai-corrected-question" style="margin-bottom: 0.5rem;"></p>
+            <ul id="ai-issues" style="font-size: 0.85rem; color: var(--error); margin-left: 1.5rem;"></ul>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" id="validate-btn" class="btn btn-secondary" style="flex: 1; padding: 1rem;">Validate with AI</button>
+            <button type="submit" name="save" class="btn btn-primary" style="flex: 1; padding: 1rem;">Save Question</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('validate-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('validate-btn');
+        btn.textContent = 'Validating...';
+        btn.disabled = true;
+
+        const formData = new FormData(document.getElementById('question-form'));
+        formData.append('validate', 'true');
+
+        try {
+            const response = await fetch('{% url "add_question" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+            const data = await response.json();
+            
+            const feedbackBlock = document.getElementById('ai-feedback');
+            feedbackBlock.style.display = 'block';
+            
+            document.getElementById('ai-corrected-question').innerHTML = `<strong>Suggested:</strong> ${data.corrected_question}`;
+            
+            const issuesList = document.getElementById('ai-issues');
+            issuesList.innerHTML = '';
+            if(data.issues && data.issues.length) {
+                data.issues.forEach(issue => {
+                    const li = document.createElement('li');
+                    li.textContent = issue;
+                    issuesList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No issues found! Great question.';
+                li.style.color = 'var(--success)';
+                issuesList.appendChild(li);
+            }
+            
+            // Optionally auto-fill the corrections
+            if(data.corrected_question) document.getElementById('question_text').value = data.corrected_question;
+            if(data.correct_answer) document.getElementById('correct_option').value = data.correct_answer;
+            if(data.corrected_options) {
+                data.corrected_options.forEach((opt, idx) => {
+                    const input = document.getElementById(`option${idx+1}`);
+                    if(input) input.value = opt;
+                });
+            }
+
+        } catch(err) {
+            alert('AI Validation failed.');
+        } finally {
+            btn.textContent = 'Validate with AI';
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,9 +1,14 @@
 {% extends 'quizapp/base.html' %}
 {% block title %}Practice Quizzes - Quiz Portal{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1>Practice Quizzes</h1>
-    <p>Cricket · Football · Technology · Current Affairs · Geopolitics</p>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>Practice Quizzes</h1>
+        <p>Cricket · Football · Technology · Current Affairs · Geopolitics</p>
+    </div>
+    {% if is_admin %}
+    <a href="{% url 'admin_create_quiz' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 1rem;">+ Add Quiz</a>
+    {% endif %}
 </div>
 {% if quizzes %}
 <div class="quiz-grid">

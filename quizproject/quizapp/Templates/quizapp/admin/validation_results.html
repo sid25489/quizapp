@@ -1,0 +1,75 @@
+{% extends 'quizapp/base.html' %}
+
+{% block title %}AI Validation Results{% endblock %}
+
+{% block content %}
+<div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>AI Validation Results</h1>
+    <a href="{% url 'quiz_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--success);">
+        <h3 style="color: var(--success); margin-bottom: 0.5rem;">Accepted Questions</h3>
+        <p style="font-size: 2.5rem; font-weight: bold;">{{ accepted|length }}</p>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Successfully saved to database.</p>
+    </div>
+    <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--error);">
+        <h3 style="color: var(--error); margin-bottom: 0.5rem;">Rejected Questions</h3>
+        <p style="font-size: 2.5rem; font-weight: bold;">{{ rejected|length }}</p>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Failed validation rules or duplicates.</p>
+    </div>
+</div>
+
+<div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="margin-bottom: 1rem; color: var(--success);">Accepted (AI Enhanced)</h2>
+    {% if accepted %}
+        <div style="display: grid; gap: 1rem;">
+            {% for item in accepted %}
+            <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong>{{ item.corrected_question }}</strong>
+                    <span style="background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">Score: {{ item.quality_score }}</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                    <span style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{{ item.difficulty }}</span>
+                    {% for tag in item.tags %}
+                        <span style="background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">#{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% if item.issues %}
+                    <p style="font-size: 0.85rem; color: var(--success);"><small>AI fixed:</small> {{ item.issues|join:", " }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted);">No questions were accepted.</p>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: 2rem; border: 1px solid rgba(255, 0, 0, 0.2);">
+    <h2 style="margin-bottom: 1rem; color: var(--error);">Rejected Questions</h2>
+    {% if rejected %}
+        <div style="display: grid; gap: 1rem;">
+            {% for item in rejected %}
+            <div style="background: rgba(255,0,0,0.05); padding: 1rem; border-radius: var(--radius); border: 1px solid rgba(255,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <strong>{{ item.corrected_question }}</strong>
+                    <span style="background: var(--error); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">Score: {{ item.quality_score }}</span>
+                </div>
+                <ul style="color: var(--error); font-size: 0.9rem; padding-left: 1.5rem; margin-top: 0.5rem;">
+                    {% if item.duplicate %}<li>Identified as duplicate question.</li>{% endif %}
+                    {% for issue in item.issues %}
+                        <li>{{ issue }}</li>
+                    {% endfor %}
+                    {% if item.quality_score < 60 %}<li>Quality score below 60 threshold.</li>{% endif %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted);">Great! No questions were rejected.</p>
+    {% endif %}
+</div>
+{% endblock %}

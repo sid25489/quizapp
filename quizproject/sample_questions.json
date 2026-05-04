@@ -1,0 +1,32 @@
+[
+    {
+        "question": "What is the primary function of an operating system?",
+        "options": [
+            "To provide a web browser",
+            "To manage computer hardware and software resources",
+            "To compile code into machine language",
+            "To design user interfaces"
+        ],
+        "correct_option": "To manage computer hardware and software resources"
+    },
+    {
+        "question": "Which HTTP method is typically used to create a new resource?",
+        "options": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE"
+        ],
+        "correct_option": "POST"
+    },
+    {
+        "question": "What is the output of '2' + '2' in JavaScript?",
+        "options": [
+            "4",
+            "22",
+            "NaN",
+            "undefined"
+        ],
+        "correct_option": "22"
+    }
+]

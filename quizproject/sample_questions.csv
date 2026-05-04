@@ -1,0 +1,6 @@
+question,option1,option2,option3,option4,correct_option
+What is the time complexity of binary search in a sorted array?,O(1),O(n),O(log n),O(n^2),O(log n)
+Which of the following is not a valid Python keyword?,pass,eval,assert,nonlocal,eval
+What does CSS stand for?,Computer Style Sheets,Cascading Style Sheets,Creative Style Sheets,Colorful Style Sheets,Cascading Style Sheets
+In Django what is the default template language?,Jinja2,Mako,Django Template Language (DTL),Cheetah,Django Template Language (DTL)
+How many bytes are in a kilobyte conventionally?,1000,1024,1012,2048,1024

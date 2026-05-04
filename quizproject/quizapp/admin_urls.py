@@ -5,14 +5,15 @@ Add these patterns to your main urls.py under admin namespace.
 from django.urls import path
 from . import admin_views
 
-# Admin URLs - prefix with 'admin/'
+# Admin URLs - included under 'admin/quiz/' in main urls.py
+# DO NOT add 'quiz/' prefix here as it creates double paths like /admin/quiz/quiz/
 admin_patterns = [
     # Dashboard
     path('', admin_views.admin_dashboard, name='admin_dashboard'),
     
-    # Quiz Management
-    path('quiz/create/', admin_views.create_quiz, name='admin_create_quiz'),
-    path('quiz/<int:quiz_id>/', admin_views.quiz_detail, name='admin_quiz_detail'),
+    # Quiz Management - removed 'quiz/' prefix to avoid /admin/quiz/quiz/create/
+    path('create/', admin_views.create_quiz, name='admin_create_quiz'),
+    path('<int:quiz_id>/', admin_views.quiz_detail, name='admin_quiz_detail'),
     
     # Bulk Upload Flow
     path('upload/', admin_views.bulk_upload, name='admin_bulk_upload'),

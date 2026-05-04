@@ -1,0 +1,66 @@
+{% extends 'quizapp/base.html' %}
+
+{% block title %}Quiz Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>AI Quiz Dashboard</h1>
+    <div>
+        <a href="{% url 'upload_questions' %}" class="btn btn-primary" style="margin-right: 10px;">Bulk Upload AI</a>
+        <a href="{% url 'add_question' %}" class="btn btn-secondary">Add Question Manually</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <h3>Total Questions</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: var(--accent);">{{ total_questions }}</p>
+    </div>
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <h3>AI Acceptance Rate</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: var(--success);">{{ ai_acceptance_rate }}%</p>
+    </div>
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <h3>Avg Quality Score</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: var(--accent);">{{ avg_quality }}</p>
+    </div>
+    <div class="card" style="padding: 1.5rem; text-align: center;">
+        <h3>Total Quizzes</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: var(--text);">{{ total_quizzes }}</p>
+    </div>
+</div>
+
+<div class="card" style="padding: 2rem;">
+    <h2>Quizzes Overview</h2>
+    <div style="overflow-x: auto; margin-top: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <th style="padding: 1rem;">Title</th>
+                    <th style="padding: 1rem;">Questions</th>
+                    <th style="padding: 1rem;">Attempts</th>
+                    <th style="padding: 1rem;">Last Updated</th>
+                    <th style="padding: 1rem;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quiz in quizzes %}
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 1rem;">{{ quiz.title }}</td>
+                    <td style="padding: 1rem;">{{ quiz.question_count }}</td>
+                    <td style="padding: 1rem;">{{ quiz.attempt_count }}</td>
+                    <td style="padding: 1rem;">{{ quiz.updated_at|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem;">
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.9rem;">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 1rem; text-align: center;">No quizzes available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

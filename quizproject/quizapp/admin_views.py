@@ -38,8 +38,8 @@ def admin_dashboard(request):
     """
     
     quizzes = Quiz.objects.annotate(
-        question_count=Count('question'),
-        attempt_count=Count('quizattempt')
+        question_count=Count('questions'),
+        attempt_count=Count('attempts')
     ).order_by('-updated_at')
     
     recent_uploads = UploadSession.objects.select_related('quiz', 'uploaded_by').order_by('-uploaded_at')[:10]

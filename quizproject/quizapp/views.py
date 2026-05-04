@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -115,6 +115,7 @@ def quiz_list(request):
     context = {
         'page_obj': page_obj,
         'quizzes': page_obj,
+        'is_admin': request.user.is_staff or request.user.is_superuser,
     }
     return render(request, 'quizapp/quiz_list.html', context)
 
@@ -397,3 +398,135 @@ def quiz_api_detail(request, quiz_id):
     }
     
     return JsonResponse(data)
+
+
+# ==========================================
+# PRO UPGRADE VIEWS (Route Transformation)
+# ==========================================
+
+def is_staff_or_superuser(user):
+    return user.is_active and (user.is_staff or user.is_superuser)
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def quiz_dashboard(request):
+    """Custom dashboard UI replacing admin panel."""
+    quizzes = Quiz.objects.annotate(
+        question_count=Count('questions'),
+        attempt_count=Count('attempts')
+    ).order_by('-updated_at')
+    
+    total_questions = Question.objects.count()
+    ai_validated = Question.objects.filter(ai_validated=True).count()
+    ai_acceptance_rate = round((ai_validated / total_questions * 100), 1) if total_questions > 0 else 0
+    avg_quality = Question.objects.aggregate(Avg('quality_score'))['quality_score__avg'] or 0
+    
+    context = {
+        'quizzes': quizzes,
+        'total_quizzes': quizzes.count(),
+        'total_questions': total_questions,
+        'ai_acceptance_rate': ai_acceptance_rate,
+        'avg_quality': round(avg_quality, 1),
+    }
+    return render(request, 'quizapp/admin/quiz_dashboard.html', context)
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def upload_questions(request):
+    """Upload via CSV/JSON using Smart Ingestion Pipeline."""
+    if request.method == 'POST':
+        quiz_id = request.POST.get('quiz_id')
+        quiz = get_object_or_404(Quiz, id=quiz_id)
+        
+        if 'file' not in request.FILES:
+            messages.error(request, 'No file uploaded.')
+            return redirect('upload_questions')
+            
+        file = request.FILES['file']
+        
+        # In a real PRO app, use Celery here.
+        # For this prototype, we process synchronously.
+        try:
+            from .parser import SmartIngestionPipeline
+            pipeline = SmartIngestionPipeline(quiz)
+            file_content = file.read()
+            accepted, rejected = pipeline.process_file(file_content, file.name)
+            
+            # Store results in session for the validation_results view
+            request.session['validation_results'] = {
+                'accepted': accepted,
+                'rejected': rejected,
+            }
+            messages.success(request, f'Processed {len(accepted) + len(rejected)} questions. {len(accepted)} accepted.')
+            return redirect('validation_results')
+        except Exception as e:
+            messages.error(request, f'Upload failed: {str(e)}')
+            return redirect('upload_questions')
+            
+    quizzes = Quiz.objects.all()
+    return render(request, 'quizapp/admin/upload_questions.html', {'quizzes': quizzes})
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def add_question(request):
+    """Manual entry with AI validation button."""
+    quizzes = Quiz.objects.all()
+    
+    if request.method == 'POST':
+        if 'validate' in request.POST:
+            from .ai_engine.validator import AIValidator
+            validator = AIValidator()
+            question_text = request.POST.get('question_text')
+            options = [request.POST.get(f'option{i}') for i in range(1, 5)]
+            options = [o for o in options if o]
+            correct = request.POST.get('correct_option')
+            
+            validation = validator.validate_question(question_text, options, correct)
+            return JsonResponse(validation)
+        else:
+            # Standard save
+            quiz_id = request.POST.get('quiz_id')
+            quiz = get_object_or_404(Quiz, id=quiz_id)
+            question_text = request.POST.get('question_text')
+            options = [request.POST.get(f'option{i}') for i in range(1, 5)]
+            correct = request.POST.get('correct_option')
+            
+            # Save it
+            from .ai_engine.classifier import AIClassifier
+            classifier = AIClassifier()
+            class_res = classifier.classify(question_text)
+            
+            q = Question.objects.create(
+                quiz=quiz,
+                text=question_text,
+                difficulty=class_res.get('difficulty', 'Medium'),
+                tags=class_res.get('tags', []),
+                ai_validated=False
+            )
+            for opt in options:
+                if opt:
+                    Choice.objects.create(
+                        question=q,
+                        text=opt,
+                        is_correct=(opt.strip() == correct.strip())
+                    )
+            messages.success(request, 'Question added manually.')
+            return redirect('quiz_dashboard')
+            
+    return render(request, 'quizapp/admin/add_question.html', {'quizzes': quizzes})
+
+@login_required
+@user_passes_test(is_staff_or_superuser)
+def validation_results(request):
+    """Show accepted and rejected questions from AI pipeline."""
+    results = request.session.get('validation_results', {})
+    if not results:
+        messages.warning(request, 'No recent validation results found.')
+        return redirect('quiz_dashboard')
+        
+    context = {
+        'accepted': results.get('accepted', []),
+        'rejected': results.get('rejected', []),
+    }
+    return render(request, 'quizapp/admin/validation_results.html', context)
+
